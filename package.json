@@ -1,0 +1,39 @@
+{
+  "name": "r_place_clon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "server:start": "ts-node ./back/www.ts",
+    "server:watch": "nodemon ./back/www.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/plugin-transform-object-assign": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "@types/webpack": "^5.28.0",
+    "babel-loader": "^8.2.4",
+    "express": "^4.17.3",
+    "html-webpack-plugin": "^5.5.0",
+    "mysql": "^2.18.1",
+    "nodemon": "^2.0.15",
+    "p5": "^1.4.1",
+    "socket.io": "^4.4.1",
+    "socket.io-client": "^4.4.1",
+    "ts-loader": "^9.2.8",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3",
+    "webpack": "^5.71.0",
+    "webpack-bundle-analyzer": "^4.5.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-remove-debug": "^0.1.0"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.13",
+    "@types/p5": "^1.4.2",
+    "mysql2": "^2.3.3"
+  }
+}
