@@ -3,7 +3,8 @@ import { io } from 'socket.io-client';
 import { IPixelData, IPixelSimpleData } from '../types/socket.io';
 
 
-const socket = io('http://localhost:3000/');
+// const socket = io('http://192.168.1.33:3000/');
+const socket = io();
 
 socket.on('server-emit-test', (data) => {
     console.log('test-data:', data);
@@ -49,9 +50,9 @@ function generateInitialPixelsState(pixelsX: number, pixelsY: number): IPixelSim
 {
     let pixels = new Array<IPixelSimpleData>();
     let i = 0;
-    for (let x = 0; x < pixelsX; x++)
+    for (let y = 0; y < pixelsY; y++)
     {
-        for (let y = 0; y < pixelsY; y++)
+        for (let x = 0; x < pixelsX; x++)
         {
             pixels.push({id: i++, x: x, y: y, color: 'white'});
         }
@@ -61,42 +62,80 @@ function generateInitialPixelsState(pixelsX: number, pixelsY: number): IPixelSim
 
 function drawPixelCanvas(p5: p5, pixels: IPixelSimpleData[], zoom: number)
 {
-    for (let i = 0; i < pixels.length; i++)
+    // const increm: number = zoom >= 1 ? 1 : zoom >= 0.5 ? 2: 4;
+    const length: number = pixels.length;
+    
+
+    // Draw canvas again if not mode image
+    for (let i = 0; i < length; i ++)
     {
-        let plx = pixels[i].x;
-        let ply = pixels[i].y;
-        p5.fill(pixels[i].color);
-        p5.square((plx * pixlSize * zoom),(ply * pixlSize * zoom), pixlSize * zoom);
+        let plx = pixels[i].x * pixlSize * zoom;
+        let ply = pixels[i].y * pixlSize * zoom;
+        // Limitante
+        if (plx + canvasOffset.x > p5.width + pixlSize) continue;
+        if (plx + canvasOffset.x < -pixlSize*zoom*2) continue;
+        if (ply + canvasOffset.y > p5.height + pixlSize) continue;
+        if (ply + canvasOffset.y < -pixlSize*zoom*2) continue;
+        if (zoom > 4) 
+        {
+            p5.strokeWeight(zoom / 4);
+            p5.stroke('gray');
+        }
+        else p5.noStroke();
+        if (zoom > 1 || true )
+        {
+            
+            p5.fill(pixels[i].color);
+            p5.square(plx,ply, pixlSize * zoom);
+        }
     }
+
+
 }
 
-// TODO: Crear border highlight para el color seleccionado (filtrar el borde para contrastar correctamente con los distintos colores (crear un filtro por array para saber cuales combinan y cuales no.))
+// TODO: mejorar la interfaz gráfica del color activo
 // TODO: Add a minimize icon to pallete to hide some part of the canvas
 
 const len: number = colors.length;
 const bor: number = 4; // border width pixels
 function drawColorsPallete(p5: p5, colors: string[])
 {
-    const gap: number = (p5.width - (bor * 2)) / len;
 
     // Pad Bar
     p5.fill('rgba(60, 60, 60, 0.75)');
-    p5.rect(0, p5.height - (gap +  bor*2), p5.width, gap + bor*2);
+    p5.rect(xcenter, p5.height - (gap +  bor*2) -10, paw, gap + bor*2);
 
     // Show Colores
     for (let i = 0; i < len; i++)
     {
+        // Selected Color
+        if (colors[i] === activeColor)
+        {
+            let strokeColor = p5.color('white');
+            strokeColor.setAlpha(0.8);
+            p5.fill(colors[i]);
+            p5.rect(i * gap + xcenter , p5.height - (gap + bor*2) -10, gap, gap + (bor*2));
+            p5.stroke(strokeColor);
+            p5.strokeWeight(5);
+            p5.noStroke();
+        }
+        else
+        {
+        }
         p5.fill(colors[i]);
-        p5.square(i * gap + bor, p5.height - (gap + bor), gap);
+        p5.square((i * gap) + bor + xcenter, p5.height - (gap) -10, gap- 2*bor);
+        p5.noStroke();
     }
 }
 
 function changeSelectedColorHandler(p5: p5, selectedColor: string, colors: string[]) : string
 {   
-    
+    const paw: number = p5.width <= 960 ? p5.width : 960;
+    const xcenter: number = p5.width/2 - paw/2;
     // Filter to work only if cursor is in Collors Pallete
 
-    let newSelectedColor = colors[Math.floor((p5.mouseX / p5.width) * colors.length)];
+    let click = Math.floor(((p5.mouseX -xcenter) / paw) * colors.length);
+    let newSelectedColor = colors[click];
 
     if (newSelectedColor) 
     {
@@ -114,7 +153,7 @@ function updateCanvasPixelsFromDDBB(pixels: IPixelSimpleData[], loadedData: IPix
 
 const replacePixelColor = function(pixels: IPixelSimpleData[], x: number, y: number, newColor: string, emit: boolean = true)
 {
-    // console.log(x, y);
+
     let i = pixels.findIndex((pixel) => (pixel.x === x && pixel.y === y));
     if (i !== -1) 
     {
@@ -133,14 +172,13 @@ const replacePixelColor = function(pixels: IPixelSimpleData[], x: number, y: num
 
 const isCursorInMenu = function(p5: p5): boolean
 {
-    const gap: number = (p5.width - (bor * 2)) / len;
 
-    let afterCanvasXStart   = p5.mouseX >= 0;
-    let beforeCanvasXEnd    = p5.mouseX < p5.width;
-    let belowPalleteTopLine = p5.mouseY >= p5.height - gap;
-    let overCanvasBottomGap = p5.mouseY <= p5.height;
+    let afterPadMenuXStart  = p5.mouseX >= xcenter - paw/2;
+    let beforaPadXEnd       = p5.mouseX < xcenter + paw;
+    let belowPalleteTopLine = p5.mouseY >= p5.height - gap -10;
+    let overCanvasBottomGap = p5.mouseY <= p5.height -10;
 
-    return afterCanvasXStart && beforeCanvasXEnd && belowPalleteTopLine && overCanvasBottomGap;
+    return afterPadMenuXStart && beforaPadXEnd && belowPalleteTopLine && overCanvasBottomGap;
 }
 
 
@@ -199,8 +237,8 @@ const debugMouseCoords: boolean = true;  // Shows cursor coords in screen
 
 
 // Pixel construction
-const pixelsX = 100;
-const pixelsY = 100;
+const pixelsX = 350; // initial 100
+const pixelsY = 350; // initial 100
 const pixels: IPixelSimpleData[] = generateInitialPixelsState(pixelsX, pixelsY);
 
 // Event State Booleans
@@ -210,11 +248,16 @@ let isDragging: boolean = false;
 
 const   pixlSize            = 10;               // each square size
 let     canvasOffset        = {x: 0, y: 0}      // Canvas Offset
-let     ScreenOffset        = {x: 0, y: 0}      // Canvas Offset
 let     zoom                = 3;                // scroll zoom
 let     currentPixelCoords  = {x: 0, y: 0}      // Mouse over Coords on screen
 let     activeColor: string = colors[0];        // Selected Color to draw in Canvas
+let     image: p5.Image;
+let     mdimg: boolean      = zoom <= 1 ? true : false;
 
+// Pallete Pad vars
+let paw: number;
+let gap: number;
+let xcenter: number;
 
 socket.on('server-emit-newpixel', (data: IPixelData) => {
     let i: number = pixels.findIndex(pixel => data.pixelid === pixel.id);
@@ -225,18 +268,19 @@ function sketch(p5:  p5)
 {
     p5.setup = () => {
         const canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
+        image = p5.createImage(pixelsX, pixelsY);
         canvas.parent('canvas');
-        // p5.background('gray');
-        p5.noStroke();
-        p5.frameRate(32);
+        p5.frameRate(60);
 
-        socket.on('server-emit-pixels', (data: IPixelData[]) => updateCanvasPixelsFromDDBB(pixels, data))        
+        socket.on('server-emit-pixels', (data: IPixelData[]) => updateCanvasPixelsFromDDBB(pixels, data))   
+
+        paw = p5.width <= 960 ? p5.width : 960;
+        gap = (paw - (bor * 2)) / len;
+        xcenter = p5.width/2 - paw/2;
     }
 
     p5.draw = () => {
         p5.background('gray');
-
-        // TODO: update canvas offset when mouse is scrolling (use similar to place formula)
 
 
         // p5.translate(-ScreenOffset.x, -ScreenOffset.y);
@@ -295,9 +339,13 @@ function sketch(p5:  p5)
     // TODO: Mover a generador de funcion para alertar de cuando no se está en ningún pixel.
     p5.mouseMoved = (event: any) => {
         currentPixelCoords = {
-            x: Math.floor((-canvasOffset.x/(zoom*pixlSize)) + ((p5.mouseX * pixlSize)/(pixelsX * zoom))),
-            y: Math.floor((-canvasOffset.y/(zoom*pixlSize)) + (p5.mouseY*pixlSize/(pixelsY * zoom)))
+            x: Math.floor((-canvasOffset.x/(zoom*pixlSize)) + ((p5.mouseX * pixlSize)/(100 * zoom))),
+            y: Math.floor((-canvasOffset.y/(zoom*pixlSize)) + (p5.mouseY*pixlSize/(100 * zoom)))
         }
+    }
+
+    p5.windowResized = (event: any) => {
+        p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
     }
 
     // p5.mouseReleased = (event: any) => {
