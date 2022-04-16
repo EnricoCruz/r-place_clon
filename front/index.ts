@@ -101,31 +101,6 @@ function changeSelectedColorHandler(p5: p5, selectedColor: string, colors: strin
     else return selectedColor;
 }
 
-// function updateCanvasPixelsFromDDBB(pixels: IPixelSimpleData[], loadedData: IPixelData[])
-// {
-//     pixels.map((pixel: IPixelSimpleData) => loadedData.find((data: IPixelData) => {
-//         if (data.pixelid === pixel.id) pixel.color = data.color;
-//     }))
-// }
-
-// const replacePixelColor = function(pixels: IPixelSimpleData[], x: number, y: number, newColor: string, emit: boolean = true)
-// {
-
-//     let i = pixels.findIndex((pixel) => (pixel.x === x && pixel.y === y));
-//     if (i !== -1) 
-//     {
-//         pixels[i].color = newColor;
-//         if (emit) 
-//         {
-//             socket.emit('client-emit-newplace', {userid: 0, pixelid: i, color: newColor, time: Date.now()});
-//         }
-//         else
-//         {
-//             console.log('color replaced');
-//         }
-//     }
-//     else console.log(`Pixel: (${x} | ${y}) not found!!`);
-// }
 
 const isCursorInMenu = function(p5: p5): boolean
 {
@@ -216,11 +191,6 @@ let paw: number;
 let gap: number;
 let xcenter: number;
 
-// socket.on('server-emit-newpixel', (data: IPixelData) => {
-//     let i: number = pixels.findIndex(pixel => data.pixelid === pixel.id);
-//     replacePixelColor(pixels, pixels[i].x, pixels[i].y, data.color, false);
-// });
-
 // Handlers
 let socketHandler: SocketHandler;
 let canvasHandler: CanvasHandler;
@@ -245,9 +215,9 @@ function sketch(p5:  p5)
 
 
         // p5.translate(-ScreenOffset.x, -ScreenOffset.y);
-        p5.translate(canvasOffset.x, canvasOffset.y);
+        // p5.translate(canvasOffset.x, canvasOffset.y);
         canvasHandler.drawPixelCanvas(zoom);
-        p5.translate(-canvasOffset.x, -canvasOffset.y);
+        // p5.translate(-canvasOffset.x, -canvasOffset.y);
 
 
         // Screen Overlay
@@ -276,7 +246,8 @@ function sketch(p5:  p5)
         }
         else
         {
-            canvasOffset = {x: canvasOffset.x + (p5.movedX), y: canvasOffset.y + (p5.movedY)}
+            canvasHandler.updateCanvasOffset(p5.movedX, p5.movedY);
+            // canvasOffset = {x: canvasOffset.x + (p5.movedX), y: canvasOffset.y + (p5.movedY)}
         }
         // console.log(canvasOffset);
     }
@@ -299,6 +270,7 @@ function sketch(p5:  p5)
 
     // TODO: Mover a generador de funcion para alertar de cuando no se está en ningún pixel.
     p5.mouseMoved = (event: any) => {
+        const canvasOffset = canvasHandler.getOffset();
         currentPixelCoords = {
             x: Math.floor((-canvasOffset.x/(zoom*pixlSize)) + ((p5.mouseX * pixlSize)/(100 * zoom))),
             y: Math.floor((-canvasOffset.y/(zoom*pixlSize)) + (p5.mouseY*pixlSize/(100 * zoom)))

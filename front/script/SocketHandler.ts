@@ -41,15 +41,15 @@ export default class SocketHandler
         else console.log(`Pixel: (${x} | ${y}) not found!!`);
     }
 
-    public listenServerEvents(pixels: IPixelSimpleData[], x: number, y:number, newColor: string)
+    public listenServerEvents()
     {
         // Download Initial Canvas State
         SocketHandler.socket.on('server-emit-pixels', (data: IPixelData[]) => this.canvasHandler.loadCanvasPixelsFromDDBB(data));
 
         // Listen for new pixel updates
         SocketHandler.socket.on('server-emit-newpixel', (data: IPixelData) => {
-            let i: number = this.canvasHandler.findPixelIndexById((<number>data.id));
-            this.replacePixelColor(pixels[i].x, pixels[i].y, data.color, false);
+            let pixel: IPixelSimpleData = (<IPixelSimpleData>this.canvasHandler.findPixelById((<number>data.id)));
+            this.replacePixelColor(pixel.x, pixel.y, data.color, false);
         });
     }
 }

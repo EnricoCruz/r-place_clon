@@ -45,7 +45,7 @@ export default class CanvasHandler
     {
         // const increm: number = zoom >= 1 ? 1 : zoom >= 0.5 ? 2: 4;
         const length: number = CanvasHandler.pixels.length;
-        
+        this.p5.translate(CanvasHandler.offsetX, CanvasHandler.offsetY);
 
         // Draw canvas again if not mode image
         for (let i = 0; i < length; i ++)
@@ -70,6 +70,7 @@ export default class CanvasHandler
                 this.p5.square(plx,ply, CanvasHandler.pixlSize * zoom);
             }
         }
+        this.p5.translate(-CanvasHandler.offsetX, -CanvasHandler.offsetY);
 
 
     }
@@ -86,9 +87,25 @@ export default class CanvasHandler
         else return -1;
     }
 
+    public updateCanvasOffset(x: number, y: number)
+    {
+        CanvasHandler.offsetX += x;
+        CanvasHandler.offsetY += y;
+    }
+
     // Helpers
     public findPixelIndexById(id: number)
     {
         return CanvasHandler.pixels.findIndex(pixel => pixel.id === id);
+    }
+
+    public findPixelById(id: number): IPixelSimpleData | undefined
+    {
+        return CanvasHandler.pixels.find((pixel: IPixelSimpleData) => pixel.id === id);
+    }
+
+    public getOffset(): {x: number, y: number}
+    {
+        return {x: CanvasHandler.offsetX, y: CanvasHandler.offsetY};
     }
 }
