@@ -27,10 +27,3 @@ export interface IPixelData {
     time: number;
     id?: number
 }
-
-export interface IPixelSimpleData {
-    id: number;
-    x: number,
-    y: number,
-    color: string;
-}

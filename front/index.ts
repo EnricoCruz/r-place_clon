@@ -1,14 +1,17 @@
 import p5 from 'p5';
-import { io } from 'socket.io-client';
-import { IPixelData, IPixelSimpleData } from '../types/socket.io';
+import { IPixelSimpleData } from '../types/p5.pixel';
+import { IPixelData } from '../types/socket.io';
+
+import SocketHandler from './script/SocketHandler';
+import CanvasHandler from './script/CanvasHandler';
+// import { io } from 'socket.io-client';
+// import { IPixelData, IPixelSimpleData } from '../types/socket.io';
 
 
 // const socket = io('http://192.168.1.33:3000/');
-const socket = io();
+// const socket = io();
 
-socket.on('server-emit-test', (data) => {
-    console.log('test-data:', data);
-});
+
 
 
 const colors: string[] = [
@@ -46,52 +49,6 @@ function getVerticalGradientBgColor(color_a: number, color_b: number, brightness
     else return `rgb(${color_a}, ${color_b}, ${brightness})`;
 }
 
-function generateInitialPixelsState(pixelsX: number, pixelsY: number): IPixelSimpleData[]
-{
-    let pixels = new Array<IPixelSimpleData>();
-    let i = 0;
-    for (let y = 0; y < pixelsY; y++)
-    {
-        for (let x = 0; x < pixelsX; x++)
-        {
-            pixels.push({id: i++, x: x, y: y, color: 'white'});
-        }
-    }
-    return pixels;
-}
-
-function drawPixelCanvas(p5: p5, pixels: IPixelSimpleData[], zoom: number)
-{
-    // const increm: number = zoom >= 1 ? 1 : zoom >= 0.5 ? 2: 4;
-    const length: number = pixels.length;
-    
-
-    // Draw canvas again if not mode image
-    for (let i = 0; i < length; i ++)
-    {
-        let plx = pixels[i].x * pixlSize * zoom;
-        let ply = pixels[i].y * pixlSize * zoom;
-        // Limitante
-        if (plx + canvasOffset.x > p5.width + pixlSize) continue;
-        if (plx + canvasOffset.x < -pixlSize*zoom*2) continue;
-        if (ply + canvasOffset.y > p5.height + pixlSize) continue;
-        if (ply + canvasOffset.y < -pixlSize*zoom*2) continue;
-        if (zoom > 4) 
-        {
-            p5.strokeWeight(zoom / 4);
-            p5.stroke('gray');
-        }
-        else p5.noStroke();
-        if (zoom > 1 || true )
-        {
-            
-            p5.fill(pixels[i].color);
-            p5.square(plx,ply, pixlSize * zoom);
-        }
-    }
-
-
-}
 
 // TODO: mejorar la interfaz gráfica del color activo
 // TODO: Add a minimize icon to pallete to hide some part of the canvas
@@ -144,31 +101,31 @@ function changeSelectedColorHandler(p5: p5, selectedColor: string, colors: strin
     else return selectedColor;
 }
 
-function updateCanvasPixelsFromDDBB(pixels: IPixelSimpleData[], loadedData: IPixelData[])
-{
-    pixels.map((pixel: IPixelSimpleData) => loadedData.find((data: IPixelData) => {
-        if (data.pixelid === pixel.id) pixel.color = data.color;
-    }))
-}
+// function updateCanvasPixelsFromDDBB(pixels: IPixelSimpleData[], loadedData: IPixelData[])
+// {
+//     pixels.map((pixel: IPixelSimpleData) => loadedData.find((data: IPixelData) => {
+//         if (data.pixelid === pixel.id) pixel.color = data.color;
+//     }))
+// }
 
-const replacePixelColor = function(pixels: IPixelSimpleData[], x: number, y: number, newColor: string, emit: boolean = true)
-{
+// const replacePixelColor = function(pixels: IPixelSimpleData[], x: number, y: number, newColor: string, emit: boolean = true)
+// {
 
-    let i = pixels.findIndex((pixel) => (pixel.x === x && pixel.y === y));
-    if (i !== -1) 
-    {
-        pixels[i].color = newColor;
-        if (emit) 
-        {
-            socket.emit('client-emit-newplace', {userid: 0, pixelid: i, color: newColor, time: Date.now()});
-        }
-        else
-        {
-            console.log('color replaced');
-        }
-    }
-    else console.log(`Pixel: (${x} | ${y}) not found!!`);
-}
+//     let i = pixels.findIndex((pixel) => (pixel.x === x && pixel.y === y));
+//     if (i !== -1) 
+//     {
+//         pixels[i].color = newColor;
+//         if (emit) 
+//         {
+//             socket.emit('client-emit-newplace', {userid: 0, pixelid: i, color: newColor, time: Date.now()});
+//         }
+//         else
+//         {
+//             console.log('color replaced');
+//         }
+//     }
+//     else console.log(`Pixel: (${x} | ${y}) not found!!`);
+// }
 
 const isCursorInMenu = function(p5: p5): boolean
 {
@@ -239,7 +196,7 @@ const debugMouseCoords: boolean = true;  // Shows cursor coords in screen
 // Pixel construction
 const pixelsX = 350; // initial 100
 const pixelsY = 350; // initial 100
-const pixels: IPixelSimpleData[] = generateInitialPixelsState(pixelsX, pixelsY);
+// const pixels: IPixelSimpleData[] = generateInitialPixelsState(pixelsX, pixelsY);
 
 // Event State Booleans
 let isZooming: boolean = false;
@@ -259,10 +216,14 @@ let paw: number;
 let gap: number;
 let xcenter: number;
 
-socket.on('server-emit-newpixel', (data: IPixelData) => {
-    let i: number = pixels.findIndex(pixel => data.pixelid === pixel.id);
-    replacePixelColor(pixels, pixels[i].x, pixels[i].y, data.color, false);
-});
+// socket.on('server-emit-newpixel', (data: IPixelData) => {
+//     let i: number = pixels.findIndex(pixel => data.pixelid === pixel.id);
+//     replacePixelColor(pixels, pixels[i].x, pixels[i].y, data.color, false);
+// });
+
+// Handlers
+let socketHandler: SocketHandler;
+let canvasHandler: CanvasHandler;
 
 function sketch(p5:  p5) 
 {
@@ -272,8 +233,8 @@ function sketch(p5:  p5)
         canvas.parent('canvas');
         p5.frameRate(60);
 
-        socket.on('server-emit-pixels', (data: IPixelData[]) => updateCanvasPixelsFromDDBB(pixels, data))   
-
+        socketHandler = new SocketHandler(p5);
+        canvasHandler = new CanvasHandler(p5);
         paw = p5.width <= 960 ? p5.width : 960;
         gap = (paw - (bor * 2)) / len;
         xcenter = p5.width/2 - paw/2;
@@ -285,7 +246,7 @@ function sketch(p5:  p5)
 
         // p5.translate(-ScreenOffset.x, -ScreenOffset.y);
         p5.translate(canvasOffset.x, canvasOffset.y);
-        drawPixelCanvas(p5, pixels, zoom);
+        canvasHandler.drawPixelCanvas(zoom);
         p5.translate(-canvasOffset.x, -canvasOffset.y);
 
 
@@ -331,7 +292,7 @@ function sketch(p5:  p5)
         // Rest of Canvas
         else
         {
-            if (!isDragging) replacePixelColor(pixels, currentPixelCoords.x, currentPixelCoords.y, activeColor);
+            if (!isDragging) socketHandler.replacePixelColor(currentPixelCoords.x, currentPixelCoords.y, activeColor);
             else isDragging = false;
         } 
     }

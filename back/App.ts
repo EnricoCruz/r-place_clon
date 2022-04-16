@@ -56,6 +56,7 @@ export default class App
 
 		io.on('connection', (socket: Socket) => {
 			console.log('new user connected');
+            // Generates array with all current pixels
 			socketIOController.loadData().then((data: IPixelData[]) => socket.emit('server-emit-pixels', data));
 
 			socket.on('client-emit-newplace', (data: IPixelData) => {
