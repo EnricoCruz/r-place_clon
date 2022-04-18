@@ -4,13 +4,6 @@ import { IPixelData } from '../types/socket.io';
 
 import SocketHandler from './script/SocketHandler';
 import CanvasHandler from './script/CanvasHandler';
-// import { io } from 'socket.io-client';
-// import { IPixelData, IPixelSimpleData } from '../types/socket.io';
-
-
-// const socket = io('http://192.168.1.33:3000/');
-// const socket = io();
-
 
 
 
@@ -231,12 +224,18 @@ function sketch(p5:  p5)
 
     // Event Listeners
     p5.mouseWheel = (event: any) => {
+        const jumpPixels = zoom < 0.36 ? 0.5 : zoom >= 0.36 && zoom < 0.5 ? 1 : zoom >= 0.5 && zoom < 1 ? 2 : 4;
         const min: number = 0.03;
-        const max: number = 10;
+        const max: number = 6;
         const dir: number = event.delta > 0 ? 1 : -1;
-        zoom -= (event.delta * 0.005);
+        let scale = ((Math.pow(zoom, 2)))/ (zoom * dir * 10);
+        zoom -= scale ;
+        console.log(jumpPixels);
         if (zoom < min) zoom = min;
         else if (zoom > max) zoom = max; 
+        let x = (currentPixelCoords.x * (canvasHandler.getPixelSize() * zoom)) - (p5.width/2) - (p5.mouseX - (p5.width/2)) ;
+        let y = (currentPixelCoords.y * (canvasHandler.getPixelSize() * zoom)) - (p5.height / 2) - (p5.mouseY - (p5.height/2));
+        canvasHandler.setCanvasOffset(-x, -y);
         // if (zoom !== min && zoom !== max) offset = {x: offset.x + dir * (p5.mouseX - (p5.displayWidth / 2)) / zoom , y: offset.y + dir * (p5.mouseY - (p5.displayHeight / 2)) / zoom };
         console.log('scrolling ->', zoom);
         // console.log('offset ->', offset);

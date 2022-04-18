@@ -3,6 +3,7 @@ import connectionPool from "../db";
 
 const socketIOModel = {
     loadData: async function(data: any) {
+        console.log(data.time);
         // const sql = `SELECT p1.pixelid, p1.color, p1.id, p1.time FROM placed p1
         // inner JOIN 
         // (SELECT pixelid, max(id) AS id FROM placed GROUP BY pixelid) p2

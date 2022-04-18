@@ -5,8 +5,8 @@ import p5 from 'p5';
 export default class CanvasHandler
 {
     // Pixel construction
-    protected static pixelsX = 600; // initial 100
-    protected static pixelsY = 338; // initial 100
+    protected static pixelsX = 1200; // initial 100
+    protected static pixelsY = 1200; // initial 100
     protected static offsetX = 0;
     protected static offsetY = 0;
     protected static zoom       = 1;
@@ -38,63 +38,28 @@ export default class CanvasHandler
     public loadCanvasPixelsFromDDBB(loadedData: IPixelData[])
     {
         console.log('loading pixels');
-        // CanvasHandler.pixels.map((pixelrow: IPixelSimpleData[]) => loadedData.find((data: IPixelData) => {
-        //     pixelrow.map((pixel: IPixelCoordsData) => {
-        //         if (data.x === pixel.x &&) pixel.color = data.color;
-        //     });
-        // }))
 
-        const rows: number = CanvasHandler.pixels.length;
-        const cols: number = CanvasHandler.pixels[0].length;
+        loadedData.forEach(data => {
+            CanvasHandler.pixels[data.y][data.x].color = data.color;
+        })
 
-        for (let y = 0; y < rows; y++)
-        {
-            for (let x = 0; x < cols; x++)
-            {
-                loadedData.map((data: IPixelData) => {
-                    if (data.x === x && data.y === y) CanvasHandler.pixels[y][x].color = data.color;
-                });
-            }
-        }
     }
 
     public drawPixelCanvas(zoom: number)
     {
-        // const increm: number = zoom >= 1 ? 1 : zoom >= 0.5 ? 2: 4;
-        const pixelsY: number = CanvasHandler.pixels.length;
-        const pixelsX: number = CanvasHandler.pixels[0].length;
-        // const ratio = 1 / zoom;
-        // const fullcanvasRatio = pixelsX / this.p5.width;
-        // const width = ratio > fullcanvasRatio ? pixelsX : Math.ceil((this.p5.width / (zoom*CanvasHandler.pixlSize)) );
-        // const height = zoom*CanvasHandler.pixlSize*pixelsY / this.p5.height <= 1 ? pixelsY : Math.ceil(this.p5.height / (zoom*CanvasHandler.pixlSize) );
-        
-        // const startX = -CanvasHandler.offsetX <= 0 || CanvasHandler.offsetX <= 0 ? 0 : -CanvasHandler.offsetX;
-        // const endX  = Math.ceil(-CanvasHandler.offsetX/ (zoom*CanvasHandler.pixlSize)) + width >= pixelsX ? pixelsX : Math.ceil(-CanvasHandler.offsetX/(zoom*CanvasHandler.pixlSize)) + width;
-        // const startY =-CanvasHandler.offsetY <= 0 || CanvasHandler.offsetY <= 0 ? 0 : -CanvasHandler.offsetY;
-        // const endY =  Math.ceil(-CanvasHandler.offsetY/ (zoom*CanvasHandler.pixlSize)) + height >= pixelsY ? pixelsY : Math.ceil(-CanvasHandler.offsetY/(zoom*CanvasHandler.pixlSize)) + height;
 
-        // console.log(CanvasHandler.offsetX, zoom);
 
         this.p5.translate(CanvasHandler.offsetX, CanvasHandler.offsetY);
         const jump: number = zoom < 0.5 ? 2 : 1;
         
-        for (let y = 0; y + jump <= pixelsY; y += jump )
+        for (let y = 0; y + jump <= CanvasHandler.pixelsY; y += jump )
         {
-            // // Lag Reducer by combining squares vertically
-            // if (currentWideRepeat > 0 && currentWideRepeat < currentX)
-            // {
-            //     const line = new Array<string>(currentWideRepeat);
-            //     for (let i = 0; i < currentWideRepeat; i++) line.push(CanvasHandler.pixels[y][currentX-i].color);
-            //     const sameColors = line.every((color) => color === CanvasHandler.pixels[y][currentX].color);
-            //     if (sameColors) ++heightRepeat;
-            //     console.log(heightRepeat);
-            //     continue;
-            // }
+
             let wideRepeat = 0;
-            for (let x = 0; x + jump <= pixelsX; x += jump )
+            for (let x = 0; x + jump <= CanvasHandler.pixelsX; x += jump )
             {
                 // Lag Reducer by combining squares horizontally
-                if (x + jump < pixelsX && CanvasHandler.pixels[y][x].color === CanvasHandler.pixels[y][x + jump].color)
+                if (x + jump < CanvasHandler.pixelsX && CanvasHandler.pixels[y][x].color === CanvasHandler.pixels[y][x + jump].color)
                 {
                     wideRepeat += jump;
                     continue;
@@ -125,29 +90,6 @@ export default class CanvasHandler
             }
         }
 
-        // Draw canvas again if not mode image
-        // for (let i = 0; i < length; i ++)
-        // {
-        //     let plx = CanvasHandler.pixels[i].x * CanvasHandler.pixlSize * zoom;
-        //     let ply = CanvasHandler.pixels[i].y * CanvasHandler.pixlSize * zoom;
-        //     // Limitante
-        //     if (plx + CanvasHandler.offsetX > this.p5.width + CanvasHandler.pixlSize) continue;
-        //     if (plx + CanvasHandler.offsetX < -CanvasHandler.pixlSize*zoom*2) continue;
-        //     if (ply + CanvasHandler.offsetY > this.p5.height + CanvasHandler.pixlSize) continue;
-        //     if (ply + CanvasHandler.offsetY < -CanvasHandler.pixlSize*zoom*2) continue;
-        //     if (zoom > 4)
-        //     {
-        //         this.p5.strokeWeight(zoom / 4);
-        //         this.p5.stroke('gray');
-        //     }
-        //     else this.p5.noStroke();
-        //     if (zoom > 1 || true )
-        //     {
-
-        //         this.p5.fill(CanvasHandler.pixels[i].color);
-        //         this.p5.square(plx,ply, CanvasHandler.pixlSize * zoom);
-        //     }
-        // }
         this.p5.translate(-CanvasHandler.offsetX, -CanvasHandler.offsetY);
         this.p5.noStroke();
 
@@ -163,6 +105,12 @@ export default class CanvasHandler
             return 1;
         }
         else return -1;
+    }
+
+    public setCanvasOffset(x: number, y: number)
+    {
+        CanvasHandler.offsetX = x;
+        CanvasHandler.offsetY = y;
     }
 
     public updateCanvasOffset(x: number, y: number)
@@ -185,5 +133,10 @@ export default class CanvasHandler
     public getOffset(): {x: number, y: number}
     {
         return {x: CanvasHandler.offsetX, y: CanvasHandler.offsetY};
+    }
+
+    public getPixelSize(): number 
+    {
+        return CanvasHandler.pixlSize;
     }
 }
