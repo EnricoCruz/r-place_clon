@@ -6,7 +6,7 @@ const connectionPool = mysql.createPool({
     password: '',
     database: 'r_place_clon',
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 100,
     queueLimit: 0
 });
 

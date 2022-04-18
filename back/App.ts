@@ -9,6 +9,7 @@ const debugClient: boolean = false;
 
 // Routers
 import defaultRouter from './routers/default.router';
+import { IPixelCoordsData } from '../types/p5.pixel';
 // Controllers
 const socketIOController = require('./controllers/socketIO.controller');
 
@@ -57,7 +58,7 @@ export default class App
 		io.on('connection', (socket: Socket) => {
 			console.log('new user connected');
             // Generates array with all current pixels
-			socketIOController.loadData().then((data: IPixelData[]) => socket.emit('server-emit-pixels', data));
+			socketIOController.loadData().then((data: IPixelCoordsData[]) => socket.emit('server-emit-pixels', data));
 
 			socket.on('client-emit-newplace', (data: IPixelData) => {
 				socketIOController.updatePixel(data)

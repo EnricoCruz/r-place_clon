@@ -24,6 +24,8 @@ const colors: string[] = [
     '#d4d7d9', '#ffffff'
 ];
 
+
+
 function getRandomColor(colors: string[])
 {
     
@@ -208,6 +210,8 @@ function sketch(p5:  p5)
         paw = p5.width <= 960 ? p5.width : 960;
         gap = (paw - (bor * 2)) / len;
         xcenter = p5.width/2 - paw/2;
+        // Function to place block from console
+        (window as any).place = canvasHandler.replacePixelColorInCanvas;
     }
 
     p5.draw = () => {
@@ -227,7 +231,7 @@ function sketch(p5:  p5)
 
     // Event Listeners
     p5.mouseWheel = (event: any) => {
-        const min: number = 0.4;
+        const min: number = 0.03;
         const max: number = 10;
         const dir: number = event.delta > 0 ? 1 : -1;
         zoom -= (event.delta * 0.005);

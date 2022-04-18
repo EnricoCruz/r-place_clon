@@ -21,9 +21,10 @@ export interface ISocketData {
 // Data packets
 
 export interface IPixelData {
+    x: number,
+    y: number,
+    n?: number
     userid: number;
-    pixelid: number;
     color: string;
     time: number;
-    id?: number
 }
